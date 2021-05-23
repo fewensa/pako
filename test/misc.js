@@ -1,16 +1,17 @@
 'use strict';
 
 
-const fs      = require('fs');
-const path    = require('path');
-const assert  = require('assert');
+const fs       = require('fs');
+const path     = require('path');
+const assert   = require('assert');
+const polyfill = require('../lib/utils/polyfill');
 
-const pako    = require('../index');
+const pako     = require('../index');
 
 describe('ArrayBuffer', () => {
 
   const file   = path.join(__dirname, 'fixtures/samples/lorem_utf_100k.txt');
-  const sample = new Uint8Array(fs.readFileSync(file));
+  const sample = new polyfill.Uint8Array(fs.readFileSync(file));
   const deflated = pako.deflate(sample);
 
   it('Deflate ArrayBuffer', () => {

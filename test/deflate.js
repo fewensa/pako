@@ -5,9 +5,10 @@ const zlib = require('zlib');
 
 const pako    = require('../index');
 const { testSamples, loadSamples } = require('./helpers');
-const assert  = require('assert');
-const fs      = require('fs');
-const path    = require('path');
+const assert   = require('assert');
+const fs       = require('fs');
+const path     = require('path');
+const polyfill = require('../lib/utils/polyfill');
 
 
 const samples = loadSamples();
@@ -196,7 +197,7 @@ describe('Deflate dictionary', () => {
     const uncompressed = pako.inflate(Buffer.from(deflate.result), { dictionary: dict });
 
     assert.deepStrictEqual(
-      new Uint8Array(Buffer.from('hellohello world')),
+      new polyfill.Uint8Array(Buffer.from('hellohello world')),
       uncompressed
     );
   });

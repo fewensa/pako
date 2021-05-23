@@ -1,10 +1,11 @@
 'use strict';
 
 
-const fs      = require('fs');
-const path    = require('path');
-const assert  = require('assert');
-const zlib    = require('zlib');
+const fs       = require('fs');
+const path     = require('path');
+const assert   = require('assert');
+const zlib     = require('zlib');
+const polyfill = require('../lib/utils/polyfill');
 
 const pako    = require('../index');
 const { Z_SYNC_FLUSH } = require('../lib/zlib/constants');
@@ -54,7 +55,7 @@ describe('Gzip special cases', () => {
     assert.strictEqual(header.os, 15);
     assert.strictEqual(header.name, 'test name');
     assert.strictEqual(header.comment, 'test comment');
-    assert.deepStrictEqual(header.extra, new Uint8Array([ 4, 5, 6 ]));
+    assert.deepStrictEqual(header.extra, new polyfill.Uint8Array([ 4, 5, 6 ]));
   });
 
   it('Read stream with SYNC marks (multistream source, file 1)', () => {
@@ -62,7 +63,7 @@ describe('Gzip special cases', () => {
 
     assert.deepStrictEqual(
       pako.ungzip(data),
-      new Uint8Array(zlib.gunzipSync(data))
+      new polyfill.Uint8Array(zlib.gunzipSync(data))
     );
   });
 
@@ -72,7 +73,7 @@ describe('Gzip special cases', () => {
     assert.deepStrictEqual(
       // Currently fails with this chunk size
       pako.ungzip(data, { chunkSize: 16384 }),
-      new Uint8Array(zlib.gunzipSync(data))
+      new polyfill.Uint8Array(zlib.gunzipSync(data))
     );
   });
 

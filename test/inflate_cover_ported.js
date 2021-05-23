@@ -9,6 +9,7 @@ const msg = require('../lib/zlib/messages');
 //const zlib_stream = require('../lib/zlib/zstream');
 const zlib_inflate = require('../lib/zlib/inflate');
 const inflate_table = require('../lib/zlib/inftrees');
+const polyfill = require('../lib/utils/polyfill');
 
 const pako  = require('../index');
 
@@ -28,7 +29,7 @@ function testInflate(hex, wbits, status) {
     assert(e === msg[status]);
     return;
   }
-  inflator.push(new Uint8Array(h2b(hex)));
+  inflator.push(new polyfill.Uint8Array(h2b(hex)));
   assert.strictEqual(inflator.err, status);
 }
 

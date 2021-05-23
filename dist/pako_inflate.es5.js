@@ -128,10 +128,10 @@
   // 3. This notice may not be removed or altered from any source distribution.
   // See state defs from inflate.js
 
-  var BAD = 30;
+  var BAD$1 = 30;
   /* got a data error -- remain here until reset */
 
-  var TYPE = 12;
+  var TYPE$1 = 12;
   /* i: waiting for type bits, including last-flag bit */
 
   /*
@@ -362,7 +362,7 @@
 
               if (dist > dmax) {
                 strm.msg = 'invalid distance too far back';
-                state.mode = BAD;
+                state.mode = BAD$1;
                 break top;
               } //#endif
 
@@ -381,7 +381,7 @@
                 if (op > whave) {
                   if (state.sane) {
                     strm.msg = 'invalid distance too far back';
-                    state.mode = BAD;
+                    state.mode = BAD$1;
                     break top;
                   } // (!) This block is disabled in zlib defaults,
                   // don't enable it for binary compatibility
@@ -519,7 +519,7 @@
               continue dodist;
             } else {
               strm.msg = 'invalid distance code';
-              state.mode = BAD;
+              state.mode = BAD$1;
               break top;
             }
 
@@ -534,11 +534,11 @@
         } else if (op & 32) {
           /* end-of-block */
           //Tracevv((stderr, "inflate:         end of block\n"));
-          state.mode = TYPE;
+          state.mode = TYPE$1;
           break top;
         } else {
           strm.msg = 'invalid literal/length code';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break top;
         }
 
@@ -563,6 +563,785 @@
     return;
   };
 
+  function _typeof(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
+  function createCommonjsModule(fn, basedir, module) {
+  	return module = {
+  		path: basedir,
+  		exports: {},
+  		require: function (path, base) {
+  			return commonjsRequire(path, (base === undefined || base === null) ? module.path : base);
+  		}
+  	}, fn(module, module.exports), module.exports;
+  }
+
+  function commonjsRequire () {
+  	throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
+  }
+
+  var typedarray = createCommonjsModule(function (module, exports) {
+    var undefined$1 = void 0; // Paranoia
+    // Beyond this value, index getters/setters (i.e. array[0], array[1]) are so slow to
+    // create, and consume so much memory, that the browser appears frozen.
+
+    var MAX_ARRAY_LENGTH = 1e5; // Approximations of internal ECMAScript conversion functions
+
+    var ECMAScript = function () {
+      // Stash a copy in case other scripts modify these
+      var opts = Object.prototype.toString,
+          ophop = Object.prototype.hasOwnProperty;
+      return {
+        // Class returns internal [[Class]] property, used to avoid cross-frame instanceof issues:
+        Class: function Class(v) {
+          return opts.call(v).replace(/^\[object *|\]$/g, '');
+        },
+        HasProperty: function HasProperty(o, p) {
+          return p in o;
+        },
+        HasOwnProperty: function HasOwnProperty(o, p) {
+          return ophop.call(o, p);
+        },
+        IsCallable: function IsCallable(o) {
+          return typeof o === 'function';
+        },
+        ToInt32: function ToInt32(v) {
+          return v >> 0;
+        },
+        ToUint32: function ToUint32(v) {
+          return v >>> 0;
+        }
+      };
+    }(); // Snapshot intrinsics
+
+
+    var LN2 = Math.LN2,
+        abs = Math.abs,
+        floor = Math.floor,
+        log = Math.log,
+        min = Math.min,
+        pow = Math.pow,
+        round = Math.round; // ES5: lock down object properties
+
+    function configureProperties(obj) {
+      if (getOwnPropNames && defineProp) {
+        var props = getOwnPropNames(obj),
+            i;
+
+        for (i = 0; i < props.length; i += 1) {
+          defineProp(obj, props[i], {
+            value: obj[props[i]],
+            writable: false,
+            enumerable: false,
+            configurable: false
+          });
+        }
+      }
+    } // emulate ES5 getter/setter API using legacy APIs
+    // http://blogs.msdn.com/b/ie/archive/2010/09/07/transitioning-existing-code-to-the-es5-getter-setter-apis.aspx
+    // (second clause tests for Object.defineProperty() in IE<9 that only supports extending DOM prototypes, but
+    // note that IE<9 does not support __defineGetter__ or __defineSetter__ so it just renders the method harmless)
+
+
+    var defineProp;
+
+    if (Object.defineProperty && function () {
+      try {
+        Object.defineProperty({}, 'x', {});
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }()) {
+      defineProp = Object.defineProperty;
+    } else {
+      defineProp = function defineProp(o, p, desc) {
+        if (!o === Object(o)) throw new TypeError("Object.defineProperty called on non-object");
+
+        if (ECMAScript.HasProperty(desc, 'get') && Object.prototype.__defineGetter__) {
+          Object.prototype.__defineGetter__.call(o, p, desc.get);
+        }
+
+        if (ECMAScript.HasProperty(desc, 'set') && Object.prototype.__defineSetter__) {
+          Object.prototype.__defineSetter__.call(o, p, desc.set);
+        }
+
+        if (ECMAScript.HasProperty(desc, 'value')) {
+          o[p] = desc.value;
+        }
+
+        return o;
+      };
+    }
+
+    var getOwnPropNames = Object.getOwnPropertyNames || function (o) {
+      if (o !== Object(o)) throw new TypeError("Object.getOwnPropertyNames called on non-object");
+      var props = [],
+          p;
+
+      for (p in o) {
+        if (ECMAScript.HasOwnProperty(o, p)) {
+          props.push(p);
+        }
+      }
+
+      return props;
+    }; // ES5: Make obj[index] an alias for obj._getter(index)/obj._setter(index, value)
+    // for index in 0 ... obj.length
+
+
+    function makeArrayAccessors(obj) {
+      if (!defineProp) {
+        return;
+      }
+
+      if (obj.length > MAX_ARRAY_LENGTH) throw new RangeError("Array too large for polyfill");
+
+      function makeArrayAccessor(index) {
+        defineProp(obj, index, {
+          'get': function get() {
+            return obj._getter(index);
+          },
+          'set': function set(v) {
+            obj._setter(index, v);
+          },
+          enumerable: true,
+          configurable: false
+        });
+      }
+
+      var i;
+
+      for (i = 0; i < obj.length; i += 1) {
+        makeArrayAccessor(i);
+      }
+    } // Internal conversion functions:
+    //    pack<Type>()   - take a number (interpreted as Type), output a byte array
+    //    unpack<Type>() - take a byte array, output a Type-like number
+
+
+    function as_signed(value, bits) {
+      var s = 32 - bits;
+      return value << s >> s;
+    }
+
+    function as_unsigned(value, bits) {
+      var s = 32 - bits;
+      return value << s >>> s;
+    }
+
+    function packI8(n) {
+      return [n & 0xff];
+    }
+
+    function unpackI8(bytes) {
+      return as_signed(bytes[0], 8);
+    }
+
+    function packU8(n) {
+      return [n & 0xff];
+    }
+
+    function unpackU8(bytes) {
+      return as_unsigned(bytes[0], 8);
+    }
+
+    function packU8Clamped(n) {
+      n = round(Number(n));
+      return [n < 0 ? 0 : n > 0xff ? 0xff : n & 0xff];
+    }
+
+    function packI16(n) {
+      return [n >> 8 & 0xff, n & 0xff];
+    }
+
+    function unpackI16(bytes) {
+      return as_signed(bytes[0] << 8 | bytes[1], 16);
+    }
+
+    function packU16(n) {
+      return [n >> 8 & 0xff, n & 0xff];
+    }
+
+    function unpackU16(bytes) {
+      return as_unsigned(bytes[0] << 8 | bytes[1], 16);
+    }
+
+    function packI32(n) {
+      return [n >> 24 & 0xff, n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff];
+    }
+
+    function unpackI32(bytes) {
+      return as_signed(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], 32);
+    }
+
+    function packU32(n) {
+      return [n >> 24 & 0xff, n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff];
+    }
+
+    function unpackU32(bytes) {
+      return as_unsigned(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], 32);
+    }
+
+    function packIEEE754(v, ebits, fbits) {
+      var bias = (1 << ebits - 1) - 1,
+          s,
+          e,
+          f,
+          i,
+          bits,
+          str,
+          bytes;
+
+      function roundToEven(n) {
+        var w = floor(n),
+            f = n - w;
+        if (f < 0.5) return w;
+        if (f > 0.5) return w + 1;
+        return w % 2 ? w + 1 : w;
+      } // Compute sign, exponent, fraction
+
+
+      if (v !== v) {
+        // NaN
+        // http://dev.w3.org/2006/webapi/WebIDL/#es-type-mapping
+        e = (1 << ebits) - 1;
+        f = pow(2, fbits - 1);
+        s = 0;
+      } else if (v === Infinity || v === -Infinity) {
+        e = (1 << ebits) - 1;
+        f = 0;
+        s = v < 0 ? 1 : 0;
+      } else if (v === 0) {
+        e = 0;
+        f = 0;
+        s = 1 / v === -Infinity ? 1 : 0;
+      } else {
+        s = v < 0;
+        v = abs(v);
+
+        if (v >= pow(2, 1 - bias)) {
+          e = min(floor(log(v) / LN2), 1023);
+          f = roundToEven(v / pow(2, e) * pow(2, fbits));
+
+          if (f / pow(2, fbits) >= 2) {
+            e = e + 1;
+            f = 1;
+          }
+
+          if (e > bias) {
+            // Overflow
+            e = (1 << ebits) - 1;
+            f = 0;
+          } else {
+            // Normalized
+            e = e + bias;
+            f = f - pow(2, fbits);
+          }
+        } else {
+          // Denormalized
+          e = 0;
+          f = roundToEven(v / pow(2, 1 - bias - fbits));
+        }
+      } // Pack sign, exponent, fraction
+
+
+      bits = [];
+
+      for (i = fbits; i; i -= 1) {
+        bits.push(f % 2 ? 1 : 0);
+        f = floor(f / 2);
+      }
+
+      for (i = ebits; i; i -= 1) {
+        bits.push(e % 2 ? 1 : 0);
+        e = floor(e / 2);
+      }
+
+      bits.push(s ? 1 : 0);
+      bits.reverse();
+      str = bits.join(''); // Bits to bytes
+
+      bytes = [];
+
+      while (str.length) {
+        bytes.push(parseInt(str.substring(0, 8), 2));
+        str = str.substring(8);
+      }
+
+      return bytes;
+    }
+
+    function unpackIEEE754(bytes, ebits, fbits) {
+      // Bytes to bits
+      var bits = [],
+          i,
+          j,
+          b,
+          str,
+          bias,
+          s,
+          e,
+          f;
+
+      for (i = bytes.length; i; i -= 1) {
+        b = bytes[i - 1];
+
+        for (j = 8; j; j -= 1) {
+          bits.push(b % 2 ? 1 : 0);
+          b = b >> 1;
+        }
+      }
+
+      bits.reverse();
+      str = bits.join(''); // Unpack sign, exponent, fraction
+
+      bias = (1 << ebits - 1) - 1;
+      s = parseInt(str.substring(0, 1), 2) ? -1 : 1;
+      e = parseInt(str.substring(1, 1 + ebits), 2);
+      f = parseInt(str.substring(1 + ebits), 2); // Produce number
+
+      if (e === (1 << ebits) - 1) {
+        return f !== 0 ? NaN : s * Infinity;
+      } else if (e > 0) {
+        // Normalized
+        return s * pow(2, e - bias) * (1 + f / pow(2, fbits));
+      } else if (f !== 0) {
+        // Denormalized
+        return s * pow(2, -(bias - 1)) * (f / pow(2, fbits));
+      } else {
+        return s < 0 ? -0 : 0;
+      }
+    }
+
+    function unpackF64(b) {
+      return unpackIEEE754(b, 11, 52);
+    }
+
+    function packF64(v) {
+      return packIEEE754(v, 11, 52);
+    }
+
+    function unpackF32(b) {
+      return unpackIEEE754(b, 8, 23);
+    }
+
+    function packF32(v) {
+      return packIEEE754(v, 8, 23);
+    } //
+    // 3 The ArrayBuffer Type
+    //
+
+
+    (function () {
+      /** @constructor */
+      var ArrayBuffer = function ArrayBuffer(length) {
+        length = ECMAScript.ToInt32(length);
+        if (length < 0) throw new RangeError('ArrayBuffer size is not a small enough positive integer');
+        this.byteLength = length;
+        this._bytes = [];
+        this._bytes.length = length;
+        var i;
+
+        for (i = 0; i < this.byteLength; i += 1) {
+          this._bytes[i] = 0;
+        }
+
+        configureProperties(this);
+      };
+
+      exports.ArrayBuffer = exports.ArrayBuffer || ArrayBuffer; //
+      // 4 The ArrayBufferView Type
+      //
+      // NOTE: this constructor is not exported
+
+      /** @constructor */
+
+      var ArrayBufferView = function ArrayBufferView() {//this.buffer = null;
+        //this.byteOffset = 0;
+        //this.byteLength = 0;
+      }; //
+      // 5 The Typed Array View Types
+      //
+
+
+      function makeConstructor(bytesPerElement, pack, unpack) {
+        // Each TypedArray type requires a distinct constructor instance with
+        // identical logic, which this produces.
+        var _ctor;
+
+        _ctor = function ctor(buffer, byteOffset, length) {
+          var array, sequence, i, s;
+
+          if (!arguments.length || typeof arguments[0] === 'number') {
+            // Constructor(unsigned long length)
+            this.length = ECMAScript.ToInt32(arguments[0]);
+            if (length < 0) throw new RangeError('ArrayBufferView size is not a small enough positive integer');
+            this.byteLength = this.length * this.BYTES_PER_ELEMENT;
+            this.buffer = new ArrayBuffer(this.byteLength);
+            this.byteOffset = 0;
+          } else if (_typeof(arguments[0]) === 'object' && arguments[0].constructor === _ctor) {
+            // Constructor(TypedArray array)
+            array = arguments[0];
+            this.length = array.length;
+            this.byteLength = this.length * this.BYTES_PER_ELEMENT;
+            this.buffer = new ArrayBuffer(this.byteLength);
+            this.byteOffset = 0;
+
+            for (i = 0; i < this.length; i += 1) {
+              this._setter(i, array._getter(i));
+            }
+          } else if (_typeof(arguments[0]) === 'object' && !(arguments[0] instanceof ArrayBuffer || ECMAScript.Class(arguments[0]) === 'ArrayBuffer')) {
+            // Constructor(sequence<type> array)
+            sequence = arguments[0];
+            this.length = ECMAScript.ToUint32(sequence.length);
+            this.byteLength = this.length * this.BYTES_PER_ELEMENT;
+            this.buffer = new ArrayBuffer(this.byteLength);
+            this.byteOffset = 0;
+
+            for (i = 0; i < this.length; i += 1) {
+              s = sequence[i];
+
+              this._setter(i, Number(s));
+            }
+          } else if (_typeof(arguments[0]) === 'object' && (arguments[0] instanceof ArrayBuffer || ECMAScript.Class(arguments[0]) === 'ArrayBuffer')) {
+            // Constructor(ArrayBuffer buffer,
+            //             optional unsigned long byteOffset, optional unsigned long length)
+            this.buffer = buffer;
+            this.byteOffset = ECMAScript.ToUint32(byteOffset);
+
+            if (this.byteOffset > this.buffer.byteLength) {
+              throw new RangeError("byteOffset out of range");
+            }
+
+            if (this.byteOffset % this.BYTES_PER_ELEMENT) {
+              // The given byteOffset must be a multiple of the element
+              // size of the specific type, otherwise an exception is raised.
+              throw new RangeError("ArrayBuffer length minus the byteOffset is not a multiple of the element size.");
+            }
+
+            if (arguments.length < 3) {
+              this.byteLength = this.buffer.byteLength - this.byteOffset;
+
+              if (this.byteLength % this.BYTES_PER_ELEMENT) {
+                throw new RangeError("length of buffer minus byteOffset not a multiple of the element size");
+              }
+
+              this.length = this.byteLength / this.BYTES_PER_ELEMENT;
+            } else {
+              this.length = ECMAScript.ToUint32(length);
+              this.byteLength = this.length * this.BYTES_PER_ELEMENT;
+            }
+
+            if (this.byteOffset + this.byteLength > this.buffer.byteLength) {
+              throw new RangeError("byteOffset and length reference an area beyond the end of the buffer");
+            }
+          } else {
+            throw new TypeError("Unexpected argument type(s)");
+          }
+
+          this.constructor = _ctor;
+          configureProperties(this);
+          makeArrayAccessors(this);
+        };
+
+        _ctor.prototype = new ArrayBufferView();
+        _ctor.prototype.BYTES_PER_ELEMENT = bytesPerElement;
+        _ctor.prototype._pack = pack;
+        _ctor.prototype._unpack = unpack;
+        _ctor.BYTES_PER_ELEMENT = bytesPerElement; // getter type (unsigned long index);
+
+        _ctor.prototype._getter = function (index) {
+          if (arguments.length < 1) throw new SyntaxError("Not enough arguments");
+          index = ECMAScript.ToUint32(index);
+
+          if (index >= this.length) {
+            return undefined$1;
+          }
+
+          var bytes = [],
+              i,
+              o;
+
+          for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT; i < this.BYTES_PER_ELEMENT; i += 1, o += 1) {
+            bytes.push(this.buffer._bytes[o]);
+          }
+
+          return this._unpack(bytes);
+        }; // NONSTANDARD: convenience alias for getter: type get(unsigned long index);
+
+
+        _ctor.prototype.get = _ctor.prototype._getter; // setter void (unsigned long index, type value);
+
+        _ctor.prototype._setter = function (index, value) {
+          if (arguments.length < 2) throw new SyntaxError("Not enough arguments");
+          index = ECMAScript.ToUint32(index);
+
+          if (index >= this.length) {
+            return undefined$1;
+          }
+
+          var bytes = this._pack(value),
+              i,
+              o;
+
+          for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT; i < this.BYTES_PER_ELEMENT; i += 1, o += 1) {
+            this.buffer._bytes[o] = bytes[i];
+          }
+        }; // void set(TypedArray array, optional unsigned long offset);
+        // void set(sequence<type> array, optional unsigned long offset);
+
+
+        _ctor.prototype.set = function (index, value) {
+          if (arguments.length < 1) throw new SyntaxError("Not enough arguments");
+          var array, sequence, offset, len, i, s, d, byteOffset, byteLength, tmp;
+
+          if (_typeof(arguments[0]) === 'object' && arguments[0].constructor === this.constructor) {
+            // void set(TypedArray array, optional unsigned long offset);
+            array = arguments[0];
+            offset = ECMAScript.ToUint32(arguments[1]);
+
+            if (offset + array.length > this.length) {
+              throw new RangeError("Offset plus length of array is out of range");
+            }
+
+            byteOffset = this.byteOffset + offset * this.BYTES_PER_ELEMENT;
+            byteLength = array.length * this.BYTES_PER_ELEMENT;
+
+            if (array.buffer === this.buffer) {
+              tmp = [];
+
+              for (i = 0, s = array.byteOffset; i < byteLength; i += 1, s += 1) {
+                tmp[i] = array.buffer._bytes[s];
+              }
+
+              for (i = 0, d = byteOffset; i < byteLength; i += 1, d += 1) {
+                this.buffer._bytes[d] = tmp[i];
+              }
+            } else {
+              for (i = 0, s = array.byteOffset, d = byteOffset; i < byteLength; i += 1, s += 1, d += 1) {
+                this.buffer._bytes[d] = array.buffer._bytes[s];
+              }
+            }
+          } else if (_typeof(arguments[0]) === 'object' && typeof arguments[0].length !== 'undefined') {
+            // void set(sequence<type> array, optional unsigned long offset);
+            sequence = arguments[0];
+            len = ECMAScript.ToUint32(sequence.length);
+            offset = ECMAScript.ToUint32(arguments[1]);
+
+            if (offset + len > this.length) {
+              throw new RangeError("Offset plus length of array is out of range");
+            }
+
+            for (i = 0; i < len; i += 1) {
+              s = sequence[i];
+
+              this._setter(offset + i, Number(s));
+            }
+          } else {
+            throw new TypeError("Unexpected argument type(s)");
+          }
+        }; // TypedArray subarray(long begin, optional long end);
+
+
+        _ctor.prototype.subarray = function (start, end) {
+          function clamp(v, min, max) {
+            return v < min ? min : v > max ? max : v;
+          }
+
+          start = ECMAScript.ToInt32(start);
+          end = ECMAScript.ToInt32(end);
+
+          if (arguments.length < 1) {
+            start = 0;
+          }
+
+          if (arguments.length < 2) {
+            end = this.length;
+          }
+
+          if (start < 0) {
+            start = this.length + start;
+          }
+
+          if (end < 0) {
+            end = this.length + end;
+          }
+
+          start = clamp(start, 0, this.length);
+          end = clamp(end, 0, this.length);
+          var len = end - start;
+
+          if (len < 0) {
+            len = 0;
+          }
+
+          return new this.constructor(this.buffer, this.byteOffset + start * this.BYTES_PER_ELEMENT, len);
+        };
+
+        return _ctor;
+      }
+
+      var Int8Array = makeConstructor(1, packI8, unpackI8);
+      var Uint8Array = makeConstructor(1, packU8, unpackU8);
+      var Uint8ClampedArray = makeConstructor(1, packU8Clamped, unpackU8);
+      var Int16Array = makeConstructor(2, packI16, unpackI16);
+      var Uint16Array = makeConstructor(2, packU16, unpackU16);
+      var Int32Array = makeConstructor(4, packI32, unpackI32);
+      var Uint32Array = makeConstructor(4, packU32, unpackU32);
+      var Float32Array = makeConstructor(4, packF32, unpackF32);
+      var Float64Array = makeConstructor(8, packF64, unpackF64);
+      exports.Int8Array = exports.Int8Array || Int8Array;
+      exports.Uint8Array = exports.Uint8Array || Uint8Array;
+      exports.Uint8ClampedArray = exports.Uint8ClampedArray || Uint8ClampedArray;
+      exports.Int16Array = exports.Int16Array || Int16Array;
+      exports.Uint16Array = exports.Uint16Array || Uint16Array;
+      exports.Int32Array = exports.Int32Array || Int32Array;
+      exports.Uint32Array = exports.Uint32Array || Uint32Array;
+      exports.Float32Array = exports.Float32Array || Float32Array;
+      exports.Float64Array = exports.Float64Array || Float64Array;
+    })(); //
+    // 6 The DataView View Type
+    //
+
+
+    (function () {
+      function r(array, index) {
+        return ECMAScript.IsCallable(array.get) ? array.get(index) : array[index];
+      }
+
+      var IS_BIG_ENDIAN = function () {
+        var u16array = new exports.Uint16Array([0x1234]),
+            u8array = new exports.Uint8Array(u16array.buffer);
+        return r(u8array, 0) === 0x12;
+      }(); // Constructor(ArrayBuffer buffer,
+      //             optional unsigned long byteOffset,
+      //             optional unsigned long byteLength)
+
+      /** @constructor */
+
+
+      var DataView = function DataView(buffer, byteOffset, byteLength) {
+        if (arguments.length === 0) {
+          buffer = new exports.ArrayBuffer(0);
+        } else if (!(buffer instanceof exports.ArrayBuffer || ECMAScript.Class(buffer) === 'ArrayBuffer')) {
+          throw new TypeError("TypeError");
+        }
+
+        this.buffer = buffer || new exports.ArrayBuffer(0);
+        this.byteOffset = ECMAScript.ToUint32(byteOffset);
+
+        if (this.byteOffset > this.buffer.byteLength) {
+          throw new RangeError("byteOffset out of range");
+        }
+
+        if (arguments.length < 3) {
+          this.byteLength = this.buffer.byteLength - this.byteOffset;
+        } else {
+          this.byteLength = ECMAScript.ToUint32(byteLength);
+        }
+
+        if (this.byteOffset + this.byteLength > this.buffer.byteLength) {
+          throw new RangeError("byteOffset and length reference an area beyond the end of the buffer");
+        }
+
+        configureProperties(this);
+      };
+
+      function makeGetter(arrayType) {
+        return function (byteOffset, littleEndian) {
+          byteOffset = ECMAScript.ToUint32(byteOffset);
+
+          if (byteOffset + arrayType.BYTES_PER_ELEMENT > this.byteLength) {
+            throw new RangeError("Array index out of range");
+          }
+
+          byteOffset += this.byteOffset;
+          var uint8Array = new exports.Uint8Array(this.buffer, byteOffset, arrayType.BYTES_PER_ELEMENT),
+              bytes = [],
+              i;
+
+          for (i = 0; i < arrayType.BYTES_PER_ELEMENT; i += 1) {
+            bytes.push(r(uint8Array, i));
+          }
+
+          if (Boolean(littleEndian) === Boolean(IS_BIG_ENDIAN)) {
+            bytes.reverse();
+          }
+
+          return r(new arrayType(new exports.Uint8Array(bytes).buffer), 0);
+        };
+      }
+
+      DataView.prototype.getUint8 = makeGetter(exports.Uint8Array);
+      DataView.prototype.getInt8 = makeGetter(exports.Int8Array);
+      DataView.prototype.getUint16 = makeGetter(exports.Uint16Array);
+      DataView.prototype.getInt16 = makeGetter(exports.Int16Array);
+      DataView.prototype.getUint32 = makeGetter(exports.Uint32Array);
+      DataView.prototype.getInt32 = makeGetter(exports.Int32Array);
+      DataView.prototype.getFloat32 = makeGetter(exports.Float32Array);
+      DataView.prototype.getFloat64 = makeGetter(exports.Float64Array);
+
+      function makeSetter(arrayType) {
+        return function (byteOffset, value, littleEndian) {
+          byteOffset = ECMAScript.ToUint32(byteOffset);
+
+          if (byteOffset + arrayType.BYTES_PER_ELEMENT > this.byteLength) {
+            throw new RangeError("Array index out of range");
+          } // Get bytes
+
+
+          var typeArray = new arrayType([value]),
+              byteArray = new exports.Uint8Array(typeArray.buffer),
+              bytes = [],
+              i,
+              byteView;
+
+          for (i = 0; i < arrayType.BYTES_PER_ELEMENT; i += 1) {
+            bytes.push(r(byteArray, i));
+          } // Flip if necessary
+
+
+          if (Boolean(littleEndian) === Boolean(IS_BIG_ENDIAN)) {
+            bytes.reverse();
+          } // Write them
+
+
+          byteView = new exports.Uint8Array(this.buffer, byteOffset, arrayType.BYTES_PER_ELEMENT);
+          byteView.set(bytes);
+        };
+      }
+
+      DataView.prototype.setUint8 = makeSetter(exports.Uint8Array);
+      DataView.prototype.setInt8 = makeSetter(exports.Int8Array);
+      DataView.prototype.setUint16 = makeSetter(exports.Uint16Array);
+      DataView.prototype.setInt16 = makeSetter(exports.Int16Array);
+      DataView.prototype.setUint32 = makeSetter(exports.Uint32Array);
+      DataView.prototype.setInt32 = makeSetter(exports.Int32Array);
+      DataView.prototype.setFloat32 = makeSetter(exports.Float32Array);
+      DataView.prototype.setFloat64 = makeSetter(exports.Float64Array);
+      exports.DataView = exports.DataView || DataView;
+    })();
+  });
+
+  var polyfill = {
+    Uint8Array: Uint8Array ? Uint8Array : typedarray.Uint8Array,
+    Uint16Array: Uint16Array ? Uint16Array : typedarray.Uint16Array
+  };
+
   // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
   //
   // This software is provided 'as-is', without any express or implied
@@ -581,23 +1360,24 @@
   //   misrepresented as being the original software.
   // 3. This notice may not be removed or altered from any source distribution.
 
-  var MAXBITS = 15;
-  var ENOUGH_LENS = 852;
-  var ENOUGH_DISTS = 592; //const ENOUGH = (ENOUGH_LENS+ENOUGH_DISTS);
 
-  var CODES = 0;
-  var LENS = 1;
-  var DISTS = 2;
-  var lbase = new Uint16Array([
+  var MAXBITS = 15;
+  var ENOUGH_LENS$1 = 852;
+  var ENOUGH_DISTS$1 = 592; //const ENOUGH = (ENOUGH_LENS+ENOUGH_DISTS);
+
+  var CODES$1 = 0;
+  var LENS$1 = 1;
+  var DISTS$1 = 2;
+  var lbase = new polyfill.Uint16Array([
   /* Length codes 257..285 base */
   3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0]);
-  var lext = new Uint8Array([
+  var lext = new polyfill.Uint8Array([
   /* Length codes 257..285 extra */
   16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 72, 78]);
-  var dbase = new Uint16Array([
+  var dbase = new polyfill.Uint16Array([
   /* Distance codes 0..29 base */
   1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0, 0]);
-  var dext = new Uint8Array([
+  var dext = new polyfill.Uint8Array([
   /* Distance codes 0..29 extra */
   16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 64, 64]);
 
@@ -655,9 +1435,9 @@
     var end;
     /* use base and extra for symbol > end */
 
-    var count = new Uint16Array(MAXBITS + 1); //[MAXBITS+1];    /* number of codes of each length */
+    var count = new polyfill.Uint16Array(MAXBITS + 1); //[MAXBITS+1];    /* number of codes of each length */
 
-    var offs = new Uint16Array(MAXBITS + 1); //[MAXBITS+1];     /* offsets in table for each length */
+    var offs = new polyfill.Uint16Array(MAXBITS + 1); //[MAXBITS+1];     /* offsets in table for each length */
 
     var extra = null;
     var extra_index = 0;
@@ -754,7 +1534,7 @@
 
     }
 
-    if (left > 0 && (type === CODES || max !== 1)) {
+    if (left > 0 && (type === CODES$1 || max !== 1)) {
       return -1;
       /* incomplete set */
     }
@@ -806,12 +1586,12 @@
     // to avoid deopts in old v8
 
 
-    if (type === CODES) {
+    if (type === CODES$1) {
       base = extra = work;
       /* dummy value--not used */
 
       end = 19;
-    } else if (type === LENS) {
+    } else if (type === LENS$1) {
       base = lbase;
       base_index -= 257;
       extra = lext;
@@ -855,7 +1635,7 @@
 
     /* check available table space */
 
-    if (type === LENS && used > ENOUGH_LENS || type === DISTS && used > ENOUGH_DISTS) {
+    if (type === LENS$1 && used > ENOUGH_LENS$1 || type === DISTS$1 && used > ENOUGH_DISTS$1) {
       return 1;
     }
     /* process all codes and make table entries */
@@ -950,7 +1730,7 @@
 
         used += 1 << curr;
 
-        if (type === LENS && used > ENOUGH_LENS || type === DISTS && used > ENOUGH_DISTS) {
+        if (type === LENS$1 && used > ENOUGH_LENS$1 || type === DISTS$1 && used > ENOUGH_DISTS$1) {
           return 1;
         }
         /* point entry in root table to sub-table */
@@ -1003,7 +1783,7 @@
   //   misrepresented as being the original software.
   // 3. This notice may not be removed or altered from any source distribution.
 
-  var constants = {
+  var constants$1 = {
     /* Allowed flush values; see deflate() and inflate() below for details */
     Z_NO_FLUSH: 0,
     Z_PARTIAL_FLUSH: 1,
@@ -1067,24 +1847,24 @@
   // 3. This notice may not be removed or altered from any source distribution.
 
 
-  var CODES$1 = 0;
-  var LENS$1 = 1;
-  var DISTS$1 = 2;
+  var CODES = 0;
+  var LENS = 1;
+  var DISTS = 2;
   /* Public constants ==========================================================*/
 
   /* ===========================================================================*/
 
-  var Z_FINISH = constants.Z_FINISH,
-      Z_BLOCK = constants.Z_BLOCK,
-      Z_TREES = constants.Z_TREES,
-      Z_OK = constants.Z_OK,
-      Z_STREAM_END = constants.Z_STREAM_END,
-      Z_NEED_DICT = constants.Z_NEED_DICT,
-      Z_STREAM_ERROR = constants.Z_STREAM_ERROR,
-      Z_DATA_ERROR = constants.Z_DATA_ERROR,
-      Z_MEM_ERROR = constants.Z_MEM_ERROR,
-      Z_BUF_ERROR = constants.Z_BUF_ERROR,
-      Z_DEFLATED = constants.Z_DEFLATED;
+  var Z_FINISH$1 = constants$1.Z_FINISH,
+      Z_BLOCK = constants$1.Z_BLOCK,
+      Z_TREES = constants$1.Z_TREES,
+      Z_OK$1 = constants$1.Z_OK,
+      Z_STREAM_END$1 = constants$1.Z_STREAM_END,
+      Z_NEED_DICT$1 = constants$1.Z_NEED_DICT,
+      Z_STREAM_ERROR$1 = constants$1.Z_STREAM_ERROR,
+      Z_DATA_ERROR$1 = constants$1.Z_DATA_ERROR,
+      Z_MEM_ERROR$1 = constants$1.Z_MEM_ERROR,
+      Z_BUF_ERROR = constants$1.Z_BUF_ERROR,
+      Z_DEFLATED = constants$1.Z_DEFLATED;
   /* STATES ====================================================================*/
 
   /* ===========================================================================*/
@@ -1122,7 +1902,7 @@
   var DICT = 11;
   /* waiting for inflateSetDictionary() call */
 
-  var TYPE$1 = 12;
+  var TYPE = 12;
   /* i: waiting for type bits, including last-flag bit */
 
   var TYPEDO = 13;
@@ -1176,7 +1956,7 @@
   var DONE = 29;
   /* finished check, done -- remain here until reset */
 
-  var BAD$1 = 30;
+  var BAD = 30;
   /* got a data error -- remain here until reset */
 
   var MEM = 31;
@@ -1187,8 +1967,8 @@
 
   /* ===========================================================================*/
 
-  var ENOUGH_LENS$1 = 852;
-  var ENOUGH_DISTS$1 = 592; //const ENOUGH =  (ENOUGH_LENS+ENOUGH_DISTS);
+  var ENOUGH_LENS = 852;
+  var ENOUGH_DISTS = 592; //const ENOUGH =  (ENOUGH_LENS+ENOUGH_DISTS);
 
   var MAX_WBITS = 15;
   /* 32K LZ77 window */
@@ -1297,10 +2077,10 @@
     this.next = null;
     /* next available space in codes[] */
 
-    this.lens = new Uint16Array(320);
+    this.lens = new polyfill.Uint16Array(320);
     /* temporary storage for code lengths */
 
-    this.work = new Uint16Array(288);
+    this.work = new polyfill.Uint16Array(288);
     /* work area for code table building */
 
     /*
@@ -1327,7 +2107,7 @@
 
   var inflateResetKeep = function inflateResetKeep(strm) {
     if (!strm || !strm.state) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
 
     var state = strm.state;
@@ -1350,17 +2130,17 @@
     state.hold = 0;
     state.bits = 0; //state.lencode = state.distcode = state.next = state.codes;
 
-    state.lencode = state.lendyn = new Int32Array(ENOUGH_LENS$1);
-    state.distcode = state.distdyn = new Int32Array(ENOUGH_DISTS$1);
+    state.lencode = state.lendyn = new Int32Array(ENOUGH_LENS);
+    state.distcode = state.distdyn = new Int32Array(ENOUGH_DISTS);
     state.sane = 1;
     state.back = -1; //Tracev((stderr, "inflate: reset\n"));
 
-    return Z_OK;
+    return Z_OK$1;
   };
 
   var inflateReset = function inflateReset(strm) {
     if (!strm || !strm.state) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
 
     var state = strm.state;
@@ -1375,7 +2155,7 @@
     /* get the state */
 
     if (!strm || !strm.state) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
 
     var state = strm.state;
@@ -1395,7 +2175,7 @@
 
 
     if (windowBits && (windowBits < 8 || windowBits > 15)) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
 
     if (state.window !== null && state.wbits !== windowBits) {
@@ -1411,7 +2191,7 @@
 
   var inflateInit2 = function inflateInit2(strm, windowBits) {
     if (!strm) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     } //strm.msg = Z_NULL;                 /* in case we return an error */
 
 
@@ -1424,7 +2204,7 @@
     ;
     var ret = inflateReset2(strm, windowBits);
 
-    if (ret !== Z_OK) {
+    if (ret !== Z_OK$1) {
       strm.state = null
       /*Z_NULL*/
       ;
@@ -1476,7 +2256,7 @@
         state.lens[sym++] = 8;
       }
 
-      inftrees(LENS$1, state.lens, 0, 288, lenfix, 0, state.work, {
+      inftrees(LENS, state.lens, 0, 288, lenfix, 0, state.work, {
         bits: 9
       });
       /* distance table */
@@ -1487,7 +2267,7 @@
         state.lens[sym++] = 5;
       }
 
-      inftrees(DISTS$1, state.lens, 0, 32, distfix, 0, state.work, {
+      inftrees(DISTS, state.lens, 0, 32, distfix, 0, state.work, {
         bits: 5
       });
       /* do this just once */
@@ -1525,7 +2305,7 @@
       state.wsize = 1 << state.wbits;
       state.wnext = 0;
       state.whave = 0;
-      state.window = new Uint8Array(state.wsize);
+      state.window = new polyfill.Uint8Array(state.wsize);
     }
     /* copy state->wsize or less output bytes into the circular window */
 
@@ -1566,7 +2346,7 @@
     return 0;
   };
 
-  var inflate = function inflate(strm, flush) {
+  var inflate$1 = function inflate(strm, flush) {
     var state;
     var input, output; // input/output buffers
 
@@ -1610,7 +2390,7 @@
     var ret;
     /* return code */
 
-    var hbuf = new Uint8Array(4);
+    var hbuf = new polyfill.Uint8Array(4);
     /* buffer for gzip header crc calculation */
 
     var opts;
@@ -1618,15 +2398,15 @@
 
     var order =
     /* permutation of code lengths */
-    new Uint8Array([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
+    new polyfill.Uint8Array([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
 
     if (!strm || !strm.state || !strm.output || !strm.input && strm.avail_in !== 0) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
 
     state = strm.state;
 
-    if (state.mode === TYPE$1) {
+    if (state.mode === TYPE) {
       state.mode = TYPEDO;
     }
     /* skip check */
@@ -1644,7 +2424,7 @@
 
     _in = have;
     _out = left;
-    ret = Z_OK;
+    ret = Z_OK$1;
 
     inf_leave: // goto emulation
     for (;;) {
@@ -1698,7 +2478,7 @@
           /*BITS(8)*/
           8) + (hold >> 8)) % 31) {
             strm.msg = 'incorrect header check';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
@@ -1706,7 +2486,7 @@
           /*BITS(4)*/
           Z_DEFLATED) {
             strm.msg = 'unknown compression method';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           } //--- DROPBITS(4) ---//
 
@@ -1722,7 +2502,7 @@
             state.wbits = len;
           } else if (len > state.wbits) {
             strm.msg = 'invalid window size';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           } // !!! pako patch. Force use `options.windowBits` if passed.
           // Required to always use max window size by default.
@@ -1734,7 +2514,7 @@
           strm.adler = state.check = 1
           /*adler32(0L, Z_NULL, 0)*/
           ;
-          state.mode = hold & 0x200 ? DICTID : TYPE$1; //=== INITBITS();
+          state.mode = hold & 0x200 ? DICTID : TYPE; //=== INITBITS();
 
           hold = 0;
           bits = 0; //===//
@@ -1758,13 +2538,13 @@
 
           if ((state.flags & 0xff) !== Z_DEFLATED) {
             strm.msg = 'unknown compression method';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
           if (state.flags & 0xe000) {
             strm.msg = 'unknown header flags set';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
@@ -1908,7 +2688,7 @@
 
                 if (!state.head.extra) {
                   // Use untyped array for more convenient processing later
-                  state.head.extra = new Uint8Array(state.head.extra_len);
+                  state.head.extra = new polyfill.Uint8Array(state.head.extra_len);
                 }
 
                 state.head.extra.set(input.subarray(next, // extra field is limited to 65536 bytes
@@ -2031,7 +2811,7 @@
 
             if (hold !== (state.check & 0xffff)) {
               strm.msg = 'header crc mismatch';
-              state.mode = BAD$1;
+              state.mode = BAD;
               break;
             } //=== INITBITS();
 
@@ -2046,7 +2826,7 @@
           }
 
           strm.adler = state.check = 0;
-          state.mode = TYPE$1;
+          state.mode = TYPE;
           break;
 
         case DICTID:
@@ -2081,17 +2861,17 @@
             state.hold = hold;
             state.bits = bits; //---
 
-            return Z_NEED_DICT;
+            return Z_NEED_DICT$1;
           }
 
           strm.adler = state.check = 1
           /*adler32(0L, Z_NULL, 0)*/
           ;
-          state.mode = TYPE$1;
+          state.mode = TYPE;
 
         /* falls through */
 
-        case TYPE$1:
+        case TYPE:
           if (flush === Z_BLOCK || flush === Z_TREES) {
             break inf_leave;
           }
@@ -2163,7 +2943,7 @@
 
             case 3:
               strm.msg = 'invalid block type';
-              state.mode = BAD$1;
+              state.mode = BAD;
           } //--- DROPBITS(2) ---//
 
 
@@ -2191,7 +2971,7 @@
 
           if ((hold & 0xffff) !== (hold >>> 16 ^ 0xffff)) {
             strm.msg = 'invalid stored block lengths';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
@@ -2243,7 +3023,7 @@
           } //Tracev((stderr, "inflate:       stored end\n"));
 
 
-          state.mode = TYPE$1;
+          state.mode = TYPE;
           break;
 
         case TABLE:
@@ -2283,7 +3063,7 @@
 
           if (state.nlen > 286 || state.ndist > 30) {
             strm.msg = 'too many length or distance symbols';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           } //#endif
           //Tracev((stderr, "inflate:       table sizes ok\n"));
@@ -2328,12 +3108,12 @@
           opts = {
             bits: state.lenbits
           };
-          ret = inftrees(CODES$1, state.lens, 0, 19, state.lencode, 0, state.work, opts);
+          ret = inftrees(CODES, state.lens, 0, 19, state.lencode, 0, state.work, opts);
           state.lenbits = opts.bits;
 
           if (ret) {
             strm.msg = 'invalid code lengths set';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           } //Tracev((stderr, "inflate:       code lengths ok\n"));
 
@@ -2395,7 +3175,7 @@
 
                 if (state.have === 0) {
                   strm.msg = 'invalid bit length repeat';
-                  state.mode = BAD$1;
+                  state.mode = BAD;
                   break;
                 }
 
@@ -2459,7 +3239,7 @@
 
               if (state.have + copy > state.nlen + state.ndist) {
                 strm.msg = 'invalid bit length repeat';
-                state.mode = BAD$1;
+                state.mode = BAD;
                 break;
               }
 
@@ -2471,7 +3251,7 @@
           /* handle error breaks in while */
 
 
-          if (state.mode === BAD$1) {
+          if (state.mode === BAD) {
             break;
           }
           /* check for end-of-block code (better have one) */
@@ -2479,7 +3259,7 @@
 
           if (state.lens[256] === 0) {
             strm.msg = 'invalid code -- missing end-of-block';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
           /* build code tables -- note: do not change the lenbits or distbits
@@ -2491,14 +3271,14 @@
           opts = {
             bits: state.lenbits
           };
-          ret = inftrees(LENS$1, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts); // We have separate tables & no pointers. 2 commented lines below not needed.
+          ret = inftrees(LENS, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts); // We have separate tables & no pointers. 2 commented lines below not needed.
           // state.next_index = opts.table_index;
 
           state.lenbits = opts.bits; // state.lencode = state.next;
 
           if (ret) {
             strm.msg = 'invalid literal/lengths set';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
@@ -2509,14 +3289,14 @@
           opts = {
             bits: state.distbits
           };
-          ret = inftrees(DISTS$1, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts); // We have separate tables & no pointers. 2 commented lines below not needed.
+          ret = inftrees(DISTS, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts); // We have separate tables & no pointers. 2 commented lines below not needed.
           // state.next_index = opts.table_index;
 
           state.distbits = opts.bits; // state.distcode = state.next;
 
           if (ret) {
             strm.msg = 'invalid distances set';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           } //Tracev((stderr, 'inflate:       codes ok\n'));
 
@@ -2555,7 +3335,7 @@
             hold = state.hold;
             bits = state.bits; //---
 
-            if (state.mode === TYPE$1) {
+            if (state.mode === TYPE) {
               state.back = -1;
             }
 
@@ -2638,13 +3418,13 @@
           if (here_op & 32) {
             //Tracevv((stderr, "inflate:         end of block\n"));
             state.back = -1;
-            state.mode = TYPE$1;
+            state.mode = TYPE;
             break;
           }
 
           if (here_op & 64) {
             strm.msg = 'invalid literal/length code';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
@@ -2750,7 +3530,7 @@
 
           if (here_op & 64) {
             strm.msg = 'invalid distance code';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           }
 
@@ -2789,7 +3569,7 @@
 
           if (state.offset > state.dmax) {
             strm.msg = 'invalid distance too far back';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break;
           } //#endif
           //Tracevv((stderr, "inflate:         distance %u\n", state.offset));
@@ -2813,7 +3593,7 @@
             if (copy > state.whave) {
               if (state.sane) {
                 strm.msg = 'invalid distance too far back';
-                state.mode = BAD$1;
+                state.mode = BAD;
                 break;
               } // (!) This block is disabled in zlib defaults,
               // don't enable it for binary compatibility
@@ -2908,7 +3688,7 @@
 
             if ((state.flags ? hold : zswap32(hold)) !== state.check) {
               strm.msg = 'incorrect data check';
-              state.mode = BAD$1;
+              state.mode = BAD;
               break;
             } //=== INITBITS();
 
@@ -2938,7 +3718,7 @@
 
             if (hold !== (state.total & 0xffffffff)) {
               strm.msg = 'incorrect length check';
-              state.mode = BAD$1;
+              state.mode = BAD;
               break;
             } //=== INITBITS();
 
@@ -2953,21 +3733,21 @@
         /* falls through */
 
         case DONE:
-          ret = Z_STREAM_END;
+          ret = Z_STREAM_END$1;
           break inf_leave;
 
-        case BAD$1:
-          ret = Z_DATA_ERROR;
+        case BAD:
+          ret = Z_DATA_ERROR$1;
           break inf_leave;
 
         case MEM:
-          return Z_MEM_ERROR;
+          return Z_MEM_ERROR$1;
 
         case SYNC:
         /* falls through */
 
         default:
-          return Z_STREAM_ERROR;
+          return Z_STREAM_ERROR$1;
       }
     } // inf_leave <- here is real place for "goto inf_leave", emulated via "break inf_leave"
 
@@ -2987,7 +3767,7 @@
     state.hold = hold;
     state.bits = bits; //---
 
-    if (state.wsize || _out !== strm.avail_out && state.mode < BAD$1 && (state.mode < CHECK || flush !== Z_FINISH)) {
+    if (state.wsize || _out !== strm.avail_out && state.mode < BAD && (state.mode < CHECK || flush !== Z_FINISH$1)) {
       if (updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)) ;
     }
 
@@ -3003,9 +3783,9 @@
       state.flags ? crc32_1(state.check, output, _out, strm.next_out - _out) : adler32_1(state.check, output, _out, strm.next_out - _out);
     }
 
-    strm.data_type = state.bits + (state.last ? 64 : 0) + (state.mode === TYPE$1 ? 128 : 0) + (state.mode === LEN_ || state.mode === COPY_ ? 256 : 0);
+    strm.data_type = state.bits + (state.last ? 64 : 0) + (state.mode === TYPE ? 128 : 0) + (state.mode === LEN_ || state.mode === COPY_ ? 256 : 0);
 
-    if ((_in === 0 && _out === 0 || flush === Z_FINISH) && ret === Z_OK) {
+    if ((_in === 0 && _out === 0 || flush === Z_FINISH$1) && ret === Z_OK$1) {
       ret = Z_BUF_ERROR;
     }
 
@@ -3016,7 +3796,7 @@
     if (!strm || !strm.state
     /*|| strm->zfree == (free_func)0*/
     ) {
-        return Z_STREAM_ERROR;
+        return Z_STREAM_ERROR$1;
       }
 
     var state = strm.state;
@@ -3026,26 +3806,26 @@
     }
 
     strm.state = null;
-    return Z_OK;
+    return Z_OK$1;
   };
 
   var inflateGetHeader = function inflateGetHeader(strm, head) {
     /* check state */
     if (!strm || !strm.state) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
 
     var state = strm.state;
 
     if ((state.wrap & 2) === 0) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
     /* save header structure */
 
 
     state.head = head;
     head.done = false;
-    return Z_OK;
+    return Z_OK$1;
   };
 
   var inflateSetDictionary = function inflateSetDictionary(strm, dictionary) {
@@ -3060,13 +3840,13 @@
     || !strm.state
     /* == Z_NULL */
     ) {
-        return Z_STREAM_ERROR;
+        return Z_STREAM_ERROR$1;
       }
 
     state = strm.state;
 
     if (state.wrap !== 0 && state.mode !== DICT) {
-      return Z_STREAM_ERROR;
+      return Z_STREAM_ERROR$1;
     }
     /* check for correct dictionary identifier */
 
@@ -3080,7 +3860,7 @@
       dictid = adler32_1(dictid, dictionary, dictLength, 0);
 
       if (dictid !== state.check) {
-        return Z_DATA_ERROR;
+        return Z_DATA_ERROR$1;
       }
     }
     /* copy dictionary to window using updatewindow(), which will amend the
@@ -3091,12 +3871,12 @@
 
     if (ret) {
       state.mode = MEM;
-      return Z_MEM_ERROR;
+      return Z_MEM_ERROR$1;
     }
 
     state.havedict = 1; // Tracev((stderr, "inflate:   dictionary set\n"));
 
-    return Z_OK;
+    return Z_OK$1;
   };
 
   var inflateReset_1 = inflateReset;
@@ -3104,7 +3884,7 @@
   var inflateResetKeep_1 = inflateResetKeep;
   var inflateInit_1 = inflateInit;
   var inflateInit2_1 = inflateInit2;
-  var inflate_2 = inflate;
+  var inflate_2$1 = inflate$1;
   var inflateEnd_1 = inflateEnd;
   var inflateGetHeader_1 = inflateGetHeader;
   var inflateSetDictionary_1 = inflateSetDictionary;
@@ -3119,34 +3899,18 @@
   module.exports.inflateUndermine = inflateUndermine;
   */
 
-  var inflate_1 = {
+  var inflate_1$1 = {
     inflateReset: inflateReset_1,
     inflateReset2: inflateReset2_1,
     inflateResetKeep: inflateResetKeep_1,
     inflateInit: inflateInit_1,
     inflateInit2: inflateInit2_1,
-    inflate: inflate_2,
+    inflate: inflate_2$1,
     inflateEnd: inflateEnd_1,
     inflateGetHeader: inflateGetHeader_1,
     inflateSetDictionary: inflateSetDictionary_1,
     inflateInfo: inflateInfo
   };
-
-  function _typeof(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
 
   var _has = function _has(obj, key) {
     return Object.prototype.hasOwnProperty.call(obj, key);
@@ -3188,7 +3952,7 @@
     } // join chunks
 
 
-    var result = new Uint8Array(len);
+    var result = new polyfill.Uint8Array(len);
 
     for (var _i = 0, pos = 0, _l = chunks.length; _i < _l; _i++) {
       var chunk = chunks[_i];
@@ -3204,16 +3968,16 @@
     flattenChunks: flattenChunks
   };
 
-  // String encode/decode helpers
   //
   // - apply(Array) can fail on Android 2.2
   // - apply(Uint8Array) can fail on iOS 5.1 Safari
   //
 
+
   var STR_APPLY_UIA_OK = true;
 
   try {
-    String.fromCharCode.apply(null, new Uint8Array(1));
+    String.fromCharCode.apply(null, new polyfill.Uint8Array(1));
   } catch (__) {
     STR_APPLY_UIA_OK = false;
   } // Table with utf8 lengths (calculated by first byte of sequence)
@@ -3221,7 +3985,7 @@
   // because max possible codepoint is 0x10ffff
 
 
-  var _utf8len = new Uint8Array(256);
+  var _utf8len = new polyfill.Uint8Array(256);
 
   for (var q = 0; q < 256; q++) {
     _utf8len[q] = q >= 252 ? 6 : q >= 248 ? 5 : q >= 240 ? 4 : q >= 224 ? 3 : q >= 192 ? 2 : 1;
@@ -3255,7 +4019,7 @@
     } // allocate buffer
 
 
-    buf = new Uint8Array(buf_len); // convert
+    buf = new polyfill.Uint8Array(buf_len); // convert
 
     for (i = 0, m_pos = 0; i < buf_len; m_pos++) {
       c = str.charCodeAt(m_pos);
@@ -3585,14 +4349,14 @@
 
   /* ===========================================================================*/
 
-  var Z_NO_FLUSH = constants.Z_NO_FLUSH,
-      Z_FINISH$1 = constants.Z_FINISH,
-      Z_OK$1 = constants.Z_OK,
-      Z_STREAM_END$1 = constants.Z_STREAM_END,
-      Z_NEED_DICT$1 = constants.Z_NEED_DICT,
-      Z_STREAM_ERROR$1 = constants.Z_STREAM_ERROR,
-      Z_DATA_ERROR$1 = constants.Z_DATA_ERROR,
-      Z_MEM_ERROR$1 = constants.Z_MEM_ERROR;
+  var Z_NO_FLUSH = constants$1.Z_NO_FLUSH,
+      Z_FINISH = constants$1.Z_FINISH,
+      Z_OK = constants$1.Z_OK,
+      Z_STREAM_END = constants$1.Z_STREAM_END,
+      Z_NEED_DICT = constants$1.Z_NEED_DICT,
+      Z_STREAM_ERROR = constants$1.Z_STREAM_ERROR,
+      Z_DATA_ERROR = constants$1.Z_DATA_ERROR,
+      Z_MEM_ERROR = constants$1.Z_MEM_ERROR;
   /* ===========================================================================*/
 
   /**
@@ -3714,28 +4478,28 @@
 
     this.strm = new zstream();
     this.strm.avail_out = 0;
-    var status = inflate_1.inflateInit2(this.strm, opt.windowBits);
+    var status = inflate_1$1.inflateInit2(this.strm, opt.windowBits);
 
-    if (status !== Z_OK$1) {
+    if (status !== Z_OK) {
       throw new Error(messages[status]);
     }
 
     this.header = new gzheader();
-    inflate_1.inflateGetHeader(this.strm, this.header); // Setup dictionary
+    inflate_1$1.inflateGetHeader(this.strm, this.header); // Setup dictionary
 
     if (opt.dictionary) {
       // Convert data if needed
       if (typeof opt.dictionary === 'string') {
         opt.dictionary = strings.string2buf(opt.dictionary);
       } else if (toString.call(opt.dictionary) === '[object ArrayBuffer]') {
-        opt.dictionary = new Uint8Array(opt.dictionary);
+        opt.dictionary = new polyfill.Uint8Array(opt.dictionary);
       }
 
       if (opt.raw) {
         //In raw mode we need to set the dictionary early
-        status = inflate_1.inflateSetDictionary(this.strm, opt.dictionary);
+        status = inflate_1$1.inflateSetDictionary(this.strm, opt.dictionary);
 
-        if (status !== Z_OK$1) {
+        if (status !== Z_OK) {
           throw new Error(messages[status]);
         }
       }
@@ -3776,10 +4540,10 @@
     var status, _flush_mode, last_avail_out;
 
     if (this.ended) return false;
-    if (flush_mode === ~~flush_mode) _flush_mode = flush_mode;else _flush_mode = flush_mode === true ? Z_FINISH$1 : Z_NO_FLUSH; // Convert data if needed
+    if (flush_mode === ~~flush_mode) _flush_mode = flush_mode;else _flush_mode = flush_mode === true ? Z_FINISH : Z_NO_FLUSH; // Convert data if needed
 
     if (toString.call(data) === '[object ArrayBuffer]') {
-      strm.input = new Uint8Array(data);
+      strm.input = new polyfill.Uint8Array(data);
     } else {
       strm.input = data;
     }
@@ -3789,35 +4553,35 @@
 
     for (;;) {
       if (strm.avail_out === 0) {
-        strm.output = new Uint8Array(chunkSize);
+        strm.output = new polyfill.Uint8Array(chunkSize);
         strm.next_out = 0;
         strm.avail_out = chunkSize;
       }
 
-      status = inflate_1.inflate(strm, _flush_mode);
+      status = inflate_1$1.inflate(strm, _flush_mode);
 
-      if (status === Z_NEED_DICT$1 && dictionary) {
-        status = inflate_1.inflateSetDictionary(strm, dictionary);
+      if (status === Z_NEED_DICT && dictionary) {
+        status = inflate_1$1.inflateSetDictionary(strm, dictionary);
 
-        if (status === Z_OK$1) {
-          status = inflate_1.inflate(strm, _flush_mode);
-        } else if (status === Z_DATA_ERROR$1) {
+        if (status === Z_OK) {
+          status = inflate_1$1.inflate(strm, _flush_mode);
+        } else if (status === Z_DATA_ERROR) {
           // Replace code with more verbose
-          status = Z_NEED_DICT$1;
+          status = Z_NEED_DICT;
         }
       } // Skip snyc markers if more data follows and not raw mode
 
 
-      while (strm.avail_in > 0 && status === Z_STREAM_END$1 && strm.state.wrap > 0 && data[strm.next_in] !== 0) {
-        inflate_1.inflateReset(strm);
-        status = inflate_1.inflate(strm, _flush_mode);
+      while (strm.avail_in > 0 && status === Z_STREAM_END && strm.state.wrap > 0 && data[strm.next_in] !== 0) {
+        inflate_1$1.inflateReset(strm);
+        status = inflate_1$1.inflate(strm, _flush_mode);
       }
 
       switch (status) {
-        case Z_STREAM_ERROR$1:
-        case Z_DATA_ERROR$1:
-        case Z_NEED_DICT$1:
-        case Z_MEM_ERROR$1:
+        case Z_STREAM_ERROR:
+        case Z_DATA_ERROR:
+        case Z_NEED_DICT:
+        case Z_MEM_ERROR:
           this.onEnd(status);
           this.ended = true;
           return false;
@@ -3828,7 +4592,7 @@
       last_avail_out = strm.avail_out;
 
       if (strm.next_out) {
-        if (strm.avail_out === 0 || status === Z_STREAM_END$1) {
+        if (strm.avail_out === 0 || status === Z_STREAM_END) {
           if (this.options.to === 'string') {
             var next_out_utf8 = strings.utf8border(strm.output, strm.next_out);
             var tail = strm.next_out - next_out_utf8;
@@ -3845,10 +4609,10 @@
       } // Must repeat iteration if out buffer is full
 
 
-      if (status === Z_OK$1 && last_avail_out === 0) continue; // Finalize if end of stream reached.
+      if (status === Z_OK && last_avail_out === 0) continue; // Finalize if end of stream reached.
 
-      if (status === Z_STREAM_END$1) {
-        status = inflate_1.inflateEnd(this.strm);
+      if (status === Z_STREAM_END) {
+        status = inflate_1$1.inflateEnd(this.strm);
         this.onEnd(status);
         this.ended = true;
         return true;
@@ -3885,7 +4649,7 @@
 
   Inflate.prototype.onEnd = function (status) {
     // On success - join
-    if (status === Z_OK$1) {
+    if (status === Z_OK) {
       if (this.options.to === 'string') {
         this.result = this.chunks.join('');
       } else {
@@ -3931,14 +4695,14 @@
    *
    * try {
    *   output = pako.inflate(input);
-   * } catch (err)
+   * } catch (err) {
    *   console.log(err);
    * }
    * ```
    **/
 
 
-  function inflate$1(input, options) {
+  function inflate(input, options) {
     var inflator = new Inflate(options);
     inflator.push(input); // That will never happens, if you don't cheat with options :)
 
@@ -3958,7 +4722,7 @@
   function inflateRaw(input, options) {
     options = options || {};
     options.raw = true;
-    return inflate$1(input, options);
+    return inflate(input, options);
   }
   /**
    * ungzip(data[, options]) -> Uint8Array|String
@@ -3971,22 +4735,22 @@
 
 
   var Inflate_1 = Inflate;
-  var inflate_2$1 = inflate$1;
+  var inflate_2 = inflate;
   var inflateRaw_1 = inflateRaw;
-  var ungzip = inflate$1;
-  var constants$1 = constants;
-  var inflate_1$1 = {
+  var ungzip = inflate;
+  var constants = constants$1;
+  var inflate_1 = {
     Inflate: Inflate_1,
-    inflate: inflate_2$1,
+    inflate: inflate_2,
     inflateRaw: inflateRaw_1,
     ungzip: ungzip,
-    constants: constants$1
+    constants: constants
   };
 
   exports.Inflate = Inflate_1;
-  exports.constants = constants$1;
-  exports.default = inflate_1$1;
-  exports.inflate = inflate_2$1;
+  exports.constants = constants;
+  exports.default = inflate_1;
+  exports.inflate = inflate_2;
   exports.inflateRaw = inflateRaw_1;
   exports.ungzip = ungzip;
 

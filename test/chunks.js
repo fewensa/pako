@@ -4,13 +4,14 @@
 const assert = require('assert');
 const { loadSamples } = require('./helpers');
 const pako = require('../index');
+const polyfill = require('../lib/utils/polyfill');
 
 
 const samples = loadSamples();
 
 
 function randomBuf(size) {
-  const buf = new Uint8Array(size);
+  const buf = new polyfill.Uint8Array(size);
   for (let i = 0; i < size; i++) {
     buf[i] = Math.round(Math.random() * 256);
   }
@@ -32,7 +33,7 @@ function testChunk(buf, expected, packer, chunkSize) {
   pos = 0;
   for (i = 0; i < count; i++) {
     size = (buf.length - pos) < chunkSize ? buf.length - pos : chunkSize;
-    _in = new Uint8Array(size);
+    _in = new polyfill.Uint8Array(size);
     _in.set(buf.subarray(pos, pos + size), 0);
     packer.push(_in, i === count - 1);
     pos += chunkSize;
@@ -103,7 +104,7 @@ describe('Edge condition', () => {
 
   it('should be ok on buffer border', () => {
     let i;
-    const data = new Uint8Array(1024 * 16 + 1);
+    const data = new polyfill.Uint8Array(1024 * 16 + 1);
 
     for (i = 0; i < data.length; i++) {
       data[i] = Math.floor(Math.random() * 255.999);
@@ -118,7 +119,7 @@ describe('Edge condition', () => {
       assert.ok(!inflator.err, 'Inflate failed with status ' + inflator.err);
     }
 
-    inflator.push(new Uint8Array(0));
+    inflator.push(new polyfill.Uint8Array(0));
 
     assert.ok(!inflator.err, 'Inflate failed with status ' + inflator.err);
     assert.deepStrictEqual(data, inflator.result);

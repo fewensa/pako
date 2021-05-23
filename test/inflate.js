@@ -3,8 +3,9 @@
 
 const zlib        = require('zlib');
 const assert      = require('assert');
-const fs      = require('fs');
-const path    = require('path');
+const fs       = require('fs');
+const path     = require('path');
+const polyfill = require('../lib/utils/polyfill');
 
 const pako        = require('../index');
 const { testInflate, testSamples, loadSamples } = require('./helpers');
@@ -167,7 +168,7 @@ describe('Inflate with dictionary', () => {
 
   it('should throw on the wrong dictionary', () => {
     // const zCompressed = helpers.deflateSync('world', { dictionary: Buffer.from('hello') });
-    const zCompressed = new Uint8Array([ 120, 187, 6, 44, 2, 21, 43, 207, 47, 202, 73, 1, 0, 6, 166, 2, 41 ]);
+    const zCompressed = new polyfill.Uint8Array([ 120, 187, 6, 44, 2, 21, 43, 207, 47, 202, 73, 1, 0, 6, 166, 2, 41 ]);
 
     assert.throws(function () {
       pako.inflate(zCompressed, { dictionary: 'world' });
@@ -196,14 +197,14 @@ describe('Inflate with dictionary', () => {
     testInflate(samples, { raw: true, dictionary: spdyDict }, { raw: true, dictionary: spdyDict });
   });
 
-  it('tests dictionary as Uint8Array', () => {
-    const dict = new Uint8Array(100);
+  it('tests dictionary as polyfill.Uint8Array', () => {
+    const dict = new polyfill.Uint8Array(100);
     for (let i = 0; i < 100; i++) dict[i] = Math.random() * 256;
     testInflate(samples, { dictionary: dict }, { dictionary: dict });
   });
 
   it('tests dictionary as ArrayBuffer', () => {
-    const dict = new Uint8Array(100);
+    const dict = new polyfill.Uint8Array(100);
     for (let i = 0; i < 100; i++) dict[i] = Math.random() * 256;
     testInflate(samples, { dictionary: dict.buffer }, { dictionary: dict });
   });
@@ -216,6 +217,6 @@ describe('pako patches for inflate', () => {
     const data = fs.readFileSync(path.join(__dirname, 'fixtures/bad_wbits.deflate'));
     const unpacked = fs.readFileSync(path.join(__dirname, 'fixtures/bad_wbits.txt'));
 
-    assert.deepStrictEqual(pako.inflate(data), new Uint8Array(unpacked));
+    assert.deepStrictEqual(pako.inflate(data), new polyfill.Uint8Array(unpacked));
   });
 });

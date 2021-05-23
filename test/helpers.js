@@ -1,9 +1,10 @@
 'use strict';
 
 
-const fs     = require('fs');
-const path   = require('path');
-const assert = require('assert');
+const fs       = require('fs');
+const path     = require('path');
+const assert   = require('assert');
+const polyfill = require('../lib/utils/polyfill');
 
 const pako  = require('../index');
 
@@ -18,7 +19,7 @@ function loadSamples(subdir) {
     const filepath = path.join(dir, sample);
     const extname  = path.extname(filepath);
     const basename = path.basename(filepath, extname);
-    const content  = new Uint8Array(fs.readFileSync(filepath));
+    const content  = new polyfill.Uint8Array(fs.readFileSync(filepath));
 
     if (basename[0] === '_') { return; } // skip files with name, started with dash
 
@@ -46,7 +47,7 @@ function testSingle(zlib_method, pako_method, data, options) {
   // position (= no additional gzip headers used)
   if (options.ignore_os) zlib_result[9] = pako_result[9];
 
-  assert.deepStrictEqual(pako_result, new Uint8Array(zlib_result));
+  assert.deepStrictEqual(pako_result, new polyfill.Uint8Array(zlib_result));
 }
 
 

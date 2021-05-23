@@ -7,6 +7,7 @@ const assert  = require('assert');
 
 const pako    = require('../index');
 const strings = require('../lib/utils/strings');
+const polyfill = require('../lib/utils/polyfill');
 
 // fromCharCode, but understands right > 0xffff values
 function fixedFromCharCode(code) {
@@ -38,7 +39,7 @@ describe('Encode/Decode', () => {
   // Create sample, that contains all types of utf8 (1-4byte) after conversion
   const utf16sample = a2utf16([ 0x1f3b5, 'a', 0x266a, 0x35, 0xe800, 0x10ffff, 0x0fffff ]);
   // use node Buffer internal conversion as "done right"
-  const utf8sample = new Uint8Array(Buffer.from(utf16sample));
+  const utf8sample = new polyfill.Uint8Array(Buffer.from(utf16sample));
 
   it('utf-8 border detect', () => {
     const ub = strings.utf8border;
@@ -88,7 +89,7 @@ describe('Deflate/Inflate strings', () => {
 
   const file = path.join(__dirname, 'fixtures/samples/lorem_utf_100k.txt');
   const sampleString = fs.readFileSync(file, 'utf8');
-  const sampleArray  = new Uint8Array(fs.readFileSync(file));
+  const sampleArray  = new polyfill.Uint8Array(fs.readFileSync(file));
 
   it('Deflate javascript string (utf16) on input', () => {
     assert.deepStrictEqual(
